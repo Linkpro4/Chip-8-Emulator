@@ -14,17 +14,11 @@ typedef struct Chip8State {
 	uint8_t delayTimer;
 	uint8_t soundTimer;
 	uint8_t *memory;
-	uint8_t *screen;  //this is memory[0xF00];
 	uint32_t video[64 * 32];
 	uint8_t keypad[16];
 } Chip8State;
 
 typedef struct Platform {
-	char const* title;
-	int windowWidth;
-	int windowHeight;
-	int textureWidth;
-	int textureHeight;
 	SDL_Window* window;
 	SDL_Renderer* renderer;
 	SDL_Texture* texture;
@@ -54,8 +48,6 @@ Chip8State* InitChip8(void)
 	Chip8State* s = calloc(sizeof(Chip8State), 1);
 
 	s->memory = calloc(1024 * 4, 1);
-	//s->screen = &s->memory[0xf00];
-	//s->SP = 0xfa0;
 	s->PC = 0x200;
 
 	memcpy(&s->memory[0x50], font4x5, 5 * 16);
@@ -537,55 +529,53 @@ void EmulateChip8Op(Chip8State *state) {
 		break;
 		case 0x0A:
 		{
-			uint8_t reg1 = code[0] & 0xF;
-
 			if (state->keypad[0]) {
-				state->V[reg1] = 0;
+				state->V[x] = 0;
 			}
 			else if (state->keypad[1]) {
-				state->V[reg1] = 1;
+				state->V[x] = 1;
 			}
 			else  if (state->keypad[2]) {
-				state->V[reg1] = 2;
+				state->V[x] = 2;
 			}
 			else  if (state->keypad[3]) {
-				state->V[reg1] = 3;
+				state->V[x] = 3;
 			}
 			else  if (state->keypad[4]) {
-				state->V[reg1] = 4;
+				state->V[x] = 4;
 			}
 			else  if (state->keypad[5]) {
-				state->V[reg1] = 5;
+				state->V[x] = 5;
 			}
 			else  if (state->keypad[6]) {
-				state->V[reg1] = 6;
+				state->V[x] = 6;
 			}
 			else  if (state->keypad[7]) {
-				state->V[reg1] = 7;
+				state->V[x] = 7;
 			}
 			else  if (state->keypad[8]) {
-				state->V[reg1] = 8;
+				state->V[x] = 8;
 			}
 			else  if (state->keypad[9]) {
-				state->V[reg1] = 9;
+				state->V[x] = 9;
 			}
 			else  if (state->keypad[10]) {
-				state->V[reg1] = 10;
+				state->V[x] = 10;
 			}
 			else  if (state->keypad[11]) {
-				state->V[reg1] = 11;
+				state->V[x] = 11;
 			}
 			else  if (state->keypad[12]) {
-				state->V[reg1] = 12;
+				state->V[x] = 12;
 			}
 			else  if (state->keypad[13]) {
-				state->V[reg1] = 13;
+				state->V[x] = 13;
 			}
 			else  if (state->keypad[14]) {
-				state->V[reg1] = 14;
+				state->V[x] = 14;
 			}
 			else  if (state->keypad[15]) {
-				state->V[reg1] = 15;
+				state->V[x] = 15;
 			}
 			else {
 				state->PC -= 2;
@@ -629,16 +619,14 @@ void EmulateChip8Op(Chip8State *state) {
 		break;
 		case 0x55:
 		{
-			for (uint8_t i = 0; i <= state->V[x]; ++i) {
+			for (uint8_t i = 0; i <= x; i++) {
 				state->memory[state->I + i] = state->V[i];
 			}
 		}
 		break;
 		case 0x65:
 		{
-			uint8_t reg1 = code[0] & 0xF;
-
-			for (uint8_t i = 0; i <= state->V[reg1]; ++i) {
+			for (uint8_t i = 0; i <= x; i++) {
 				state->V[i] = state->memory[state->I + i];
 			}
 		}
