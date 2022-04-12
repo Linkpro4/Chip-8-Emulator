@@ -55,7 +55,7 @@ Chip8State* InitChip8(void)
 
 	s->memory = calloc(1024 * 4, 1);
 	//s->screen = &s->memory[0xf00];
-	s->SP = 0xfa0;
+	//s->SP = 0xfa0;
 	s->PC = 0x200;
 
 	memcpy(&s->memory[0x50], font4x5, 5 * 16);
@@ -268,7 +268,9 @@ int ProcessInput(struct Chip8State *state){
 }
 
 void PrintState(struct Chip8State *state) {
-	printf("PC - %04x | Memory - %02x%02x | V0 - %02x | V1 - %02x | V2 - %02x | V3 - %02x | V4 - %02x | V5 - %02x | V6 - %02x | V7 - %02x | SP - %04x | ST - %02x | DT - %02x | I - %02x |\n", state->PC, state->memory[state->PC],state->memory[state->PC+1], state->V[0], state->V[1], state->V[2], state->V[3], state->V[4], state->V[5], state->V[6], state->V[7], state->SP,state->soundTimer, state->delayTimer, state->I);
+	printf("PC - %04x | Memory - %02x%02x | V0 - %02x | V1 - %02x | V2 - %02x | V3 - %02x | V4 - %02x | V5 - %02x | V6 - %02x | V7 - %02x | SP - %04x | ST - %02x | DT - %02x | I - %02x |\n", 
+	state->PC, state->memory[state->PC],state->memory[state->PC+1], state->V[0], state->V[1], state->V[2], state->V[3], state->V[4], state->V[5], state->V[6], 
+	state->V[7], state->SP,state->soundTimer, state->delayTimer, state->I);
 }
 
 void Update(void const* buffer, int pitch, struct Platform *platform) {
@@ -307,7 +309,6 @@ void EmulateChip8Op(Chip8State *state) {
 		break;
 		case 0x00EE:
 		{
-			//UnimplementedInstruction(state);
 			state->SP = state->SP - 1;
 			state->PC = state->stack[state->SP];
 		}
@@ -316,30 +317,25 @@ void EmulateChip8Op(Chip8State *state) {
 		break;
 	case 0x01:
 	{
-		uint16_t target = ((code[0] & 0xf) << 8) | code[1];
-		state->PC = target;
+			state->PC = nnn;
 	}
 	break;
 	case 0x02:
 	{
-		uint16_t target = ((code[0] & 0xf) << 8) | code[1];
 		state->stack[state->SP] = state->PC;
 		state->SP++;
-		state->PC = target;
+		state->PC = nnn;
 	}
 	break;
 	case 0x03:
 	{
-		//uint8_t reg = code[0] & 0xF;
 		if (state->V[x] == code[1]) {
 			state->PC += 2;
 		}
-		//state->PC+=2;
 	}
 	break;
 	case 0x04:
 	{
-		//uint8_t reg = code[0] & 0xF;
 		if (state->V[x] != code[1]) {
 			state->PC += 2;
 		}
@@ -347,8 +343,6 @@ void EmulateChip8Op(Chip8State *state) {
 	break;
 	case 0x05:
 	{
-		//uint8_t reg1 = code[0] & 0x0F;
-		//uint8_t reg2 = code[1] & 0xF0;
 		if (state->V[x] == state->V[y]) {
 			state->PC += 2;
 		}
@@ -356,14 +350,11 @@ void EmulateChip8Op(Chip8State *state) {
 	break;
 	case 0x06:
 	{
-		//uint8_t reg = code[0] & 0xF;
 		state->V[x] = code[1];
-		//state->PC += 2;
 	}
 	break;
 	case 0x07:
 	{
-		//uint8_t reg = code[0] & 0xF;
 		state->V[x] = state->V[x] + code[1];
 	}
 	break;
@@ -372,36 +363,26 @@ void EmulateChip8Op(Chip8State *state) {
 		{
 		case 0x0:
 		{
-			//uint8_t reg1 = code[0] & 0xF;
-			//uint8_t reg2 = code[1] & 0xF0;
 			state->V[x] = state->V[y];
 		}
 		break;
 		case 0x1:
 		{
-			//uint8_t reg1 = code[0] & 0xF;
-			//uint8_t reg2 = code[1] & 0xF0;
 			state->V[x] = state->V[x] | state->V[y];
 		}
 		break;
 		case 0x2:
 		{
-			//uint8_t reg1 = code[0] & 0xF;
-			//uint8_t reg2 = code[1] & 0xF0;
 			state->V[x] = state->V[x] & state->V[y];
 		}
 		break;
 		case 0x3:
 		{
-			//uint8_t reg1 = code[0] & 0xF;
-			//uint8_t reg2 = code[1] & 0xF0;
 			state->V[x] = state->V[x] ^ state->V[y];
 		}
 		break;
 		case 0x4:
 		{
-			//uint8_t reg1 = code[0] & 0xF;
-			//uint8_t reg2 = code[1] & 0xF0;
 			uint16_t answer = state->V[x] + state->V[y];
 			state->V[x] = answer;
 			if (answer > 0xFF) {
@@ -414,8 +395,6 @@ void EmulateChip8Op(Chip8State *state) {
 		break;
 		case 0x5:
 		{
-			//uint8_t reg1 = code[0] & 0xF;
-			//uint8_t reg2 = code[1] & 0xF0;
 			if (state->V[x] > state->V[y]) {
 				state->V[0xF] = 1;
 			}
@@ -428,9 +407,7 @@ void EmulateChip8Op(Chip8State *state) {
 		break;
 		case 0x6:
 		{
-			//uint8_t reg1 = code[0] & 0xF;
-			//uint8_t reg2 = code[1] & 0xF0;
-			if (state->V[x] & 0x0F) {
+			if (state->V[x] & 0x1) {
 				state->V[0xF] = 1;
 			}
 			else {
@@ -442,8 +419,6 @@ void EmulateChip8Op(Chip8State *state) {
 		break;
 		case 0x7:
 		{
-			//uint8_t reg1 = code[0] & 0xF;
-			//uint8_t reg2 = code[1] & 0xF0;
 			if (state->V[x] < state->V[y]) {
 				state->V[0xF] = 1;
 			}
@@ -456,62 +431,56 @@ void EmulateChip8Op(Chip8State *state) {
 		break;
 		case 0xE:
 		{
-			//uint8_t reg1 = code[0] & 0xF;
-			//uint8_t reg2 = code[1] & 0xF0;
-			if (state->V[x] & 0xF0) {
+			state->V[0xF] = 1;
+
+			if (state->V[x] & 0x80) {
 				state->V[0xF] = 1;
 			}
 			else {
 				state->V[0xF] = 0;
 			}
 
-			state->V[x] = (state->V[x] << 1);
+			state->V[x] = (state->V[x] <<= 1);
 		}
 		break;
 		}
 		break;
 	case 0x09:
 	{
-		uint8_t reg1 = code[0] & 0xF;
-		uint8_t reg2 = (code[1] & 0xF0) >> 4;
-		if (state->V[reg1] != state->V[reg2]) {
+		if (state->V[x] != state->V[y]) {
 			state->PC += 2;
 		}
 	}
 	break;
 	case 0x0a:
 	{
-		uint16_t target = ((code[0] & 0xf) << 8) | code[1];
-		state->I = target;
-		//state->PC += 2;
+		state->I = nnn;
 	}
 	break;
 	case 0x0b:
 	{
-		uint8_t addressn = ((code[0] & 0xF) << 8) | code[1];
-		state->PC = addressn;
+		state->PC = nnn + state->V[0x0];
 	}
 	break;
 	case 0x0c:
 	{
-		uint8_t reg1 = code[0] & 0xF;
 		time_t t;
+
 		//Fix this because i know it can be done better
 		srand((unsigned)time(&t));
-		state->V[reg1] = (rand() * 255 + 1) & code[1];
+		state->V[x] = (rand() * 255) & code[1];
+		//printf("%02x", state->V[x]);
 	}
 	break;
 	case 0x0d:
 	{
-		uint8_t reg1 = code[0] & 0x0F;
-		uint8_t reg2 = (code[1] & 0xF0) >> 4;
 		uint8_t height = fullOpcode & 0x000F;
 
 		unsigned int video_width = 64;
 		unsigned int video_height = 32;
 
-		uint8_t xPos = state->V[reg1] % video_width;
-		uint8_t yPos = state->V[reg2] % video_height;
+		uint8_t xPos = state->V[x] % video_width;
+		uint8_t yPos = state->V[y] % video_height;
 
 		state->V[0xF] = 0;
 
@@ -539,9 +508,7 @@ void EmulateChip8Op(Chip8State *state) {
 		{
 		case 0x9E:
 		{
-			uint8_t reg1 = code[0] & 0xF;
-
-			uint8_t key = state->V[reg1];
+			uint8_t key = state->V[x];
 
 			if (state->keypad[key]) {
 				state->PC += 2;
@@ -550,9 +517,7 @@ void EmulateChip8Op(Chip8State *state) {
 		break;
 		case 0xA1:
 		{
-			uint8_t reg1 = code[0] & 0xF;
-
-			uint8_t key = state->V[reg1];
+			uint8_t key = state->V[x];
 
 			if (!state->keypad[key]) {
 				state->PC += 2;
@@ -567,8 +532,7 @@ void EmulateChip8Op(Chip8State *state) {
 		{
 		case 0x07:
 		{
-			uint8_t reg1 = code[0] & 0xF;
-			state->V[reg1] = state->delayTimer;
+			state->V[x] = state->delayTimer;
 		}
 		break;
 		case 0x0A:
@@ -630,33 +594,28 @@ void EmulateChip8Op(Chip8State *state) {
 		break;
 		case 0x15:
 		{
-			uint8_t reg1 = code[0] & 0xF;
-			state->delayTimer = state->V[reg1];
+			state->delayTimer = state->V[x];
 		}
 		break;
 		case 0x18:
 		{
-			uint8_t reg1 = code[0] & 0xF;
-			state->soundTimer = state->V[reg1];
+			state->soundTimer = state->V[x];
 		}
 		break;
 		case 0x1E:
 		{
-			uint8_t reg1 = code[0] & 0xF;
-			state->I += state->V[reg1];
+			state->I += state->V[x];
 		}
 		break;
 		case 0x29:
 		{
-			uint8_t reg1 = code[0] & 0xF;
-			uint8_t digit = state->V[reg1];
+			uint8_t digit = state->V[x];
 
 			state->I = 0x50 + (5 * digit);
 		}
 		break;
 		case 0x33:
 		{
-			//int reg = code[0] & 0xf;
 			uint8_t ones, tens, hundreds;
 			uint8_t value = state->V[x];
 			ones = value % 10;
@@ -670,8 +629,6 @@ void EmulateChip8Op(Chip8State *state) {
 		break;
 		case 0x55:
 		{
-			//uint8_t reg1 = code[0] & 0xF;
-
 			for (uint8_t i = 0; i <= state->V[x]; ++i) {
 				state->memory[state->I + i] = state->V[i];
 			}
@@ -984,7 +941,7 @@ int main(int argc, char**argv) {
 	//printf("%02x\n", *argv[3]);
 
 	int videoScale = 10;
-	int cycleDelay = 60;
+	int cycleDelay = 10;
 
 
 	//Initialize Video
