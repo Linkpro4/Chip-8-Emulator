@@ -886,8 +886,6 @@ void DisassembleChip8Op(uint8_t *codebuffer, int pc) {
 
 
 void cycle(struct Chip8State *state) {
-	//uint16_t opcode = ((state->memory[state->PC]) << 8) | state->memory[state->PC + 1];
-	//state->PC += 2;
 	EmulateChip8Op(state);
 
 	if (state->delayTimer > 0) {
@@ -919,18 +917,16 @@ void ReadRomIntoMemory(char**argv, struct Chip8State *state){
 
 int main(int argc, char**argv) {
 	//printf("Hello World");
+
+	if (argc < 4){
+		printf("Not enough cash... stranger");
+		exit(1);
+	}
 	//Initialize CPU
 	struct Chip8State *state = InitChip8();
 	//Arguments (ROM) (VIDEOSCALE) (CYCLE DELAY)
-	//int videoScale = (int) *argv[2];
-	//int cycleDelay = (int) *argv[3];
-
-	//printf("%02x\n", *argv[2]);
-	//printf("%02x\n", *argv[3]);
-
-	int videoScale = 10;
-	int cycleDelay = 10;
-
+	int videoScale =  atoi(argv[2]);
+	int cycleDelay =  atoi(argv[3]);
 
 	//Initialize Video
 	struct Platform *platform = InitPlatform("Chip-8 Emulator",64*videoScale,32*videoScale,64,32);
